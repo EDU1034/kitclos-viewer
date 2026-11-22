@@ -51,10 +51,11 @@
 <footer id="foot"></footer>
 <script>
 const SUPA = "https://trivhkkxkdxjrgxgxntn.supabase.co/storage/v1/object/public/kitclos/";
-const k = new URLSearchParams(location.search).get("k");
+// o código vem em ?k=… ou no fim do endereço: …/kitclos-viewer/silva-cozinha-4f2a
+const k = new URLSearchParams(location.search).get("k") || decodeURIComponent(location.pathname.replace(/\/+$/, "").split("/").pop() || "");
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-if (!k || !/^[a-z0-9]{8,40}$/.test(k)) {
+if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
   $("title").textContent = "Link inválido"; $("msg").textContent = "Peça um link novo ao seu projetista.";
 } else {
   fetch(SUPA + k + ".json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(info => {
