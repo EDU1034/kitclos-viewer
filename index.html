@@ -22,6 +22,20 @@
         border-radius:999px; padding:14px 22px; font-size:16px; font-weight:700; box-shadow:0 6px 24px rgba(79,176,255,.45); }
   footer { padding:10px 18px 16px; font-size:13px; color:var(--muted); display:flex; flex-wrap:wrap; gap:6px 16px; }
   footer a { color:var(--accent); text-decoration:none; }
+  .tools { position:absolute; right:12px; top:12px; display:flex; flex-direction:column; gap:8px; z-index:3; }
+  .tools button { width:44px; height:44px; border-radius:12px; border:1px solid rgba(255,255,255,.15); background:rgba(10,18,32,.8); color:#EAF2FA; font-size:18px; }
+  .ar { display:flex; align-items:center; gap:10px; }
+  .ar svg { flex:none; }
+  .coach { position:absolute; inset:0; display:none; align-items:center; justify-content:center; text-align:center; pointer-events:none; z-index:4; }
+  .coach div { background:rgba(10,18,32,.82); padding:18px 22px; border-radius:16px; max-width:320px; font-size:16px; line-height:1.4; }
+  .coach b { color:var(--accent); }
+  model-viewer[ar-status="session-started"] .coach.track { display:flex; }
+  .qr { position:absolute; left:16px; bottom:16px; background:#fff; color:#0A1220; padding:12px; border-radius:14px; display:none; text-align:center; font-size:12px; font-weight:600; z-index:3; }
+  .qr img, .qr canvas { display:block; margin:0 auto 6px; }
+  .howto { position:absolute; left:50%; bottom:86px; transform:translateX(-50%); width:min(92%,420px); background:rgba(10,18,32,.9); border:1px solid rgba(255,255,255,.12);
+           border-radius:16px; padding:14px 16px; font-size:14px; line-height:1.45; color:var(--ink); display:none; z-index:3; }
+  .howto ol { margin:6px 0 0 18px; padding:0; }
+  .howto .x { position:absolute; right:10px; top:6px; background:none; border:0; color:var(--muted); font-size:20px; }
   .hint { position:absolute; top:12px; left:50%; transform:translateX(-50%); background:rgba(10,18,32,.75); padding:6px 12px; border-radius:999px; font-size:12px; color:var(--muted); }
   .msg { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:30px; color:var(--muted); }
 </style>
@@ -54,12 +68,37 @@ if (!k || !/^[a-z0-9]{8,40}$/.test(k)) {
     parts.push("Gire com um dedo · zoom com dois");
     $("foot").innerHTML = parts.join(" · ");
     $("stage").innerHTML =
-      '<model-viewer src="' + SUPA + k + '.glb" camera-controls touch-action="pan-y" auto-rotate auto-rotate-delay="2500" rotation-per-second="18deg" ' +
+      '<model-viewer src="' + SUPA + k + '.glb" camera-controls touch-action="pan-y" auto-rotate auto-rotate-delay="3000" rotation-per-second="14deg" ' +
       'shadow-intensity="1" exposure="1.05" environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor" ar-scale="fixed" ' +
       'camera-orbit="-25deg 62deg auto" field-of-view="38deg" min-camera-orbit="auto 10deg auto" max-camera-orbit="auto 88deg auto" interaction-prompt="auto" alt="Projeto em 3D">' +
-      '<button slot="ar-button" class="ar">Ver na sua casa (realidade aumentada)</button>' +
-      '<div class="hint">Arraste para girar</div></model-viewer>';
+      '<button slot="ar-button" class="ar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>Ver na sua casa</button>' +
+      '<div class="coach track"><div>Aponte o celular para o <b>chão</b> e mova devagar de um lado para o outro.<br><br>Quando aparecer, <b>arraste</b> com um dedo para mudar de lugar e <b>gire</b> com dois.</div></div>' +
+      '<div class="hint">Arraste para girar · dois dedos para zoom</div></model-viewer>' +
+      '<div class="tools"><button id="bTop" title="Vista de cima">⤒</button><button id="bFront" title="De frente">◉</button><button id="bFull" title="Tela cheia">⛶</button></div>' +
+      '<div class="howto" id="howto"><button class="x" id="hx">×</button><b>Ver na sua casa (realidade aumentada)</b><ol>' +
+      '<li>Toque em <b>Ver na sua casa</b>.</li><li>Fique em pé na cozinha e aponte a câmera para o <b>chão</b>.</li>' +
+      '<li>Mova o celular devagar até o projeto aparecer no tamanho real.</li><li>Arraste para encaixar no lugar e ande em volta.</li></ol></div>' +
+      '<div class="qr" id="qr"><div id="qrc"></div>Aponte a câmera do celular<br>para ver na sua casa</div>';
     const mv = document.querySelector("model-viewer");
+    $("bTop").onclick = () => { mv.cameraOrbit = "0deg 8deg auto"; mv.autoRotate = false; };
+    $("bFront").onclick = () => { mv.cameraOrbit = "-25deg 62deg auto"; mv.autoRotate = false; };
+    $("bFull").onclick = () => { const e = document.documentElement; (e.requestFullscreen || e.webkitRequestFullscreen || (()=>{})).call(e); };
+    $("hx").onclick = () => { $("howto").style.display = "none"; try { localStorage.setItem("kc_howto", "1"); } catch (_) {} };
+    mv.addEventListener("load", () => {
+      if (mv.canActivateAR) {
+        let seen = false; try { seen = localStorage.getItem("kc_howto") === "1"; } catch (_) {}
+        if (!seen) $("howto").style.display = "block";
+      } else if (!/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+        // no computador: QR code para abrir no celular
+        const s2 = document.createElement("script");
+        s2.src = "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js";
+        s2.onload = () => { const q = qrcode(0, "M"); q.addData(location.href); q.make(); $("qrc").innerHTML = q.createImgTag(4, 0); $("qr").style.display = "block"; };
+        document.head.appendChild(s2);
+      }
+    });
+    mv.addEventListener("ar-status", (ev) => {
+      if (ev.detail.status === "failed") alert("Não deu para abrir a realidade aumentada neste aparelho. Atualize o Google Play Services para RA (Android) ou use o Safari (iPhone).");
+    });
     mv.addEventListener("error", () => { $("stage").innerHTML = '<div class="msg">Não foi possível abrir este projeto. O link pode ter expirado.</div>'; });
   });
 }
