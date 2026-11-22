@@ -67,10 +67,11 @@ if (!k || !/^[a-z0-9]{8,40}$/.test(k)) {
     if (info.email) parts.push('<a href="mailto:' + esc(info.email) + '">' + esc(info.email) + "</a>");
     parts.push("Gire com um dedo · zoom com dois");
     $("foot").innerHTML = parts.join(" · ");
+    const front = (typeof info.theta === "number" ? info.theta : 30) + "deg";
     $("stage").innerHTML =
       '<model-viewer src="' + SUPA + k + '.glb" camera-controls touch-action="pan-y" auto-rotate auto-rotate-delay="3000" rotation-per-second="14deg" ' +
       'shadow-intensity="1" exposure="1.05" environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor" ar-scale="fixed" ' +
-      'camera-orbit="-25deg 62deg auto" field-of-view="38deg" min-camera-orbit="auto 10deg auto" max-camera-orbit="auto 88deg auto" interaction-prompt="auto" alt="Projeto em 3D">' +
+      'camera-orbit="' + front + ' 62deg auto" field-of-view="38deg" min-camera-orbit="auto 10deg auto" max-camera-orbit="auto 88deg auto" interaction-prompt="auto" alt="Projeto em 3D">' +
       '<button slot="ar-button" class="ar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>Ver na sua casa</button>' +
       '<div class="coach track"><div>Aponte o celular para o <b>chão</b> e mova devagar de um lado para o outro.<br><br>Quando aparecer, <b>arraste</b> com um dedo para mudar de lugar e <b>gire</b> com dois.</div></div>' +
       '<div class="hint">Arraste para girar · dois dedos para zoom</div></model-viewer>' +
@@ -81,7 +82,7 @@ if (!k || !/^[a-z0-9]{8,40}$/.test(k)) {
       '<div class="qr" id="qr"><div id="qrc"></div>Aponte a câmera do celular<br>para ver na sua casa</div>';
     const mv = document.querySelector("model-viewer");
     $("bTop").onclick = () => { mv.cameraOrbit = "0deg 8deg auto"; mv.autoRotate = false; };
-    $("bFront").onclick = () => { mv.cameraOrbit = "-25deg 62deg auto"; mv.autoRotate = false; };
+    $("bFront").onclick = () => { mv.cameraOrbit = front + " 62deg auto"; mv.autoRotate = false; };
     $("bFull").onclick = () => { const e = document.documentElement; (e.requestFullscreen || e.webkitRequestFullscreen || (()=>{})).call(e); };
     $("hx").onclick = () => { $("howto").style.display = "none"; try { localStorage.setItem("kc_howto", "1"); } catch (_) {} };
     mv.addEventListener("load", () => {
