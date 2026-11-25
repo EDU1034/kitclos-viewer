@@ -38,6 +38,7 @@
   .howto .x { position:absolute; right:10px; top:6px; background:none; border:0; color:var(--muted); font-size:20px; }
   .hint { position:absolute; top:12px; left:50%; transform:translateX(-50%); background:rgba(10,18,32,.75); padding:6px 12px; border-radius:999px; font-size:12px; color:var(--muted); }
   .msg { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:30px; color:var(--muted); }
+.in360{position:absolute;left:50%;transform:translateX(-50%);bottom:84px;z-index:5;border:0;border-radius:24px;padding:12px 20px;background:rgba(10,18,32,.85);border:1px solid rgba(255,255,255,.2);color:#EAF2FA;font:600 15px system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -58,21 +59,21 @@ const $ = id => document.getElementById(id);
 const TX = {
   en: { loading: "Loading the project…", load2: "Loading…", bad: "Invalid link", badMsg: "Ask your designer for a new link.", your: "Your project", proj: "Project",
         turn: "Turn with one finger · zoom with two", ar: "See it in your home", coach: "Point the phone at the <b>floor</b> and move it slowly from side to side.<br><br>When it appears, <b>drag</b> with one finger to move it and <b>rotate</b> with two.",
-        hint: "Drag to rotate · two fingers to zoom", top: "Top view", front: "Front view", full: "Full screen",
+        hint: "Drag to rotate · two fingers to zoom", top: "Top view", front: "Front view", full: "Full screen", inside: "Stand inside (360°)", outside: "Back to outside",
         howT: "See it in your home (augmented reality)", how1: "Tap <b>See it in your home</b>.", how2: "Stand in the room and point the camera at the <b>floor</b>.",
         how3: "Move the phone slowly until the project appears at real size.", how4: "Drag it into place and walk around it.",
         qr: "Point your phone camera<br>to see it in your home", arFail: "Augmented reality couldn't open on this device. Update Google Play Services for AR (Android) or use Safari (iPhone).",
         err: "This project couldn't be opened. The link may have expired.", alt: "3D project" },
   es: { loading: "Cargando el proyecto…", load2: "Cargando…", bad: "Enlace inválido", badMsg: "Pide un enlace nuevo a tu diseñador.", your: "Tu proyecto", proj: "Proyecto",
         turn: "Gira con un dedo · zoom con dos", ar: "Ver en tu casa", coach: "Apunta el celular al <b>piso</b> y muévelo despacio de un lado a otro.<br><br>Cuando aparezca, <b>arrastra</b> con un dedo para moverlo y <b>gira</b> con dos.",
-        hint: "Arrastra para girar · dos dedos para zoom", top: "Vista superior", front: "De frente", full: "Pantalla completa",
+        hint: "Arrastra para girar · dos dedos para zoom", top: "Vista superior", front: "De frente", full: "Pantalla completa", inside: "Estar adentro (360°)", outside: "Volver afuera",
         howT: "Ver en tu casa (realidad aumentada)", how1: "Toca <b>Ver en tu casa</b>.", how2: "Párate en el espacio y apunta la cámara al <b>piso</b>.",
         how3: "Mueve el celular despacio hasta que el proyecto aparezca en tamaño real.", how4: "Arrástralo a su lugar y camina alrededor.",
         qr: "Apunta la cámara del celular<br>para verlo en tu casa", arFail: "No se pudo abrir la realidad aumentada en este dispositivo. Actualiza Google Play Services para RA (Android) o usa Safari (iPhone).",
         err: "No se pudo abrir este proyecto. El enlace puede haber vencido.", alt: "Proyecto en 3D" },
   pt: { loading: "Carregando o projeto…", load2: "Carregando…", bad: "Link inválido", badMsg: "Peça um link novo ao seu projetista.", your: "Seu projeto", proj: "Projeto",
         turn: "Gire com um dedo · zoom com dois", ar: "Ver na sua casa", coach: "Aponte o celular para o <b>chão</b> e mova devagar de um lado para o outro.<br><br>Quando aparecer, <b>arraste</b> com um dedo para mudar de lugar e <b>gire</b> com dois.",
-        hint: "Arraste para girar · dois dedos para zoom", top: "Vista de cima", front: "De frente", full: "Tela cheia",
+        hint: "Arraste para girar · dois dedos para zoom", top: "Vista de cima", front: "De frente", full: "Tela cheia", inside: "Ficar dentro (360°)", outside: "Voltar para fora",
         howT: "Ver na sua casa (realidade aumentada)", how1: "Toque em <b>Ver na sua casa</b>.", how2: "Fique em pé no ambiente e aponte a câmera para o <b>chão</b>.",
         how3: "Mova o celular devagar até o projeto aparecer no tamanho real.", how4: "Arraste para encaixar no lugar e ande em volta.",
         qr: "Aponte a câmera do celular<br>para ver na sua casa", arFail: "Não deu para abrir a realidade aumentada neste aparelho. Atualize o Google Play Services para RA (Android) ou use o Safari (iPhone).",
@@ -108,13 +109,30 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
       '<div class="coach track"><div>' + L.coach + '</div></div>' +
       '<div class="hint">' + L.hint + '</div></model-viewer>' +
       '<div class="tools"><button id="bTop" title="' + L.top + '">⤒</button><button id="bFront" title="' + L.front + '">◉</button><button id="bFull" title="' + L.full + '">⛶</button></div>' +
+      '<button id="b360" class="in360">' + L.inside + '</button>' +
       '<div class="howto" id="howto"><button class="x" id="hx">×</button><b>' + L.howT + '</b><ol>' +
       '<li>' + L.how1 + '</li><li>' + L.how2 + '</li>' +
       '<li>' + L.how3 + '</li><li>' + L.how4 + '</li></ol></div>' +
       '<div class="qr" id="qr"><div id="qrc"></div>' + L.qr + '</div>';
     const mv = document.querySelector("model-viewer");
-    $("bTop").onclick = () => { mv.cameraOrbit = "0deg 8deg auto"; mv.autoRotate = false; };
-    $("bFront").onclick = () => { mv.cameraOrbit = front + " 62deg auto"; mv.autoRotate = false; };
+    // 360°: câmera parada no meio da cozinha, na altura dos olhos, olhando em volta
+    let inside = false;
+    const outsideView = () => {
+      mv.cameraTarget = "auto auto auto"; mv.minCameraOrbit = "auto 10deg auto"; mv.maxCameraOrbit = "auto 88deg auto";
+      mv.fieldOfView = "38deg"; mv.cameraOrbit = front + " 62deg auto";
+    };
+    $("b360").onclick = () => {
+      inside = !inside; mv.autoRotate = false;
+      $("b360").textContent = inside ? L.outside : L.inside;
+      if (!inside) { outsideView(); return; }
+      const c = mv.getBoundingBoxCenter(), d = mv.getDimensions();
+      const eye = (c.y - d.y / 2) + Math.min(1.5, d.y * 0.7);
+      mv.cameraTarget = c.x + "m " + eye + "m " + c.z + "m";
+      mv.minCameraOrbit = "auto 35deg 0.05m"; mv.maxCameraOrbit = "auto 145deg 0.2m"; mv.maxFieldOfView = "95deg";
+      mv.fieldOfView = "80deg"; mv.cameraOrbit = front + " 90deg 0.1m";
+    };
+    $("bTop").onclick = () => { if (inside) $("b360").onclick(); mv.cameraOrbit = "0deg 8deg auto"; mv.autoRotate = false; };
+    $("bFront").onclick = () => { if (inside) $("b360").onclick(); mv.cameraOrbit = front + " 62deg auto"; mv.autoRotate = false; };
     $("bFull").onclick = () => { const e = document.documentElement; (e.requestFullscreen || e.webkitRequestFullscreen || (()=>{})).call(e); };
     $("hx").onclick = () => { $("howto").style.display = "none"; try { localStorage.setItem("kc_howto", "1"); } catch (_) {} };
     mv.addEventListener("load", () => {
