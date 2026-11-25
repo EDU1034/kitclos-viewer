@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -43,10 +43,10 @@
 <body>
 <header>
   <svg width="38" height="38" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#121C2E"/><path d="M14 14h36v10H24v26H14z" fill="none" stroke="#4FB0FF" stroke-width="3"/><rect x="17" y="17" width="9" height="9" fill="#4FB0FF" opacity=".6"/><rect x="30" y="17" width="9" height="5" fill="#4FB0FF" opacity=".6"/><rect x="33" y="34" width="14" height="8" rx="1.5" fill="none" stroke="#EAF2FA" stroke-width="2"/></svg>
-  <div><div class="t1" id="title">Carregando o projeto…</div><div class="t2" id="sub"></div></div>
+  <div><div class="t1" id="title"></div><div class="t2" id="sub"></div></div>
 </header>
 <div id="stage">
-  <div class="msg" id="msg">Carregando…</div>
+  <div class="msg" id="msg"></div>
 </div>
 <footer id="foot"></footer>
 <script>
@@ -54,33 +54,64 @@ const SUPA = "https://trivhkkxkdxjrgxgxntn.supabase.co/storage/v1/object/public/
 // o código vem em ?k=… ou no fim do endereço: …/kitclos-viewer/silva-cozinha-4f2a
 const k = new URLSearchParams(location.search).get("k") || decodeURIComponent(location.pathname.replace(/\/+$/, "").split("/").pop() || "");
 const $ = id => document.getElementById(id);
+// textos da página em inglês (padrão), espanhol e português: vem do app ("lang") ou do idioma do celular
+const TX = {
+  en: { loading: "Loading the project…", load2: "Loading…", bad: "Invalid link", badMsg: "Ask your designer for a new link.", your: "Your project", proj: "Project",
+        turn: "Turn with one finger · zoom with two", ar: "See it in your home", coach: "Point the phone at the <b>floor</b> and move it slowly from side to side.<br><br>When it appears, <b>drag</b> with one finger to move it and <b>rotate</b> with two.",
+        hint: "Drag to rotate · two fingers to zoom", top: "Top view", front: "Front view", full: "Full screen",
+        howT: "See it in your home (augmented reality)", how1: "Tap <b>See it in your home</b>.", how2: "Stand in the room and point the camera at the <b>floor</b>.",
+        how3: "Move the phone slowly until the project appears at real size.", how4: "Drag it into place and walk around it.",
+        qr: "Point your phone camera<br>to see it in your home", arFail: "Augmented reality couldn't open on this device. Update Google Play Services for AR (Android) or use Safari (iPhone).",
+        err: "This project couldn't be opened. The link may have expired.", alt: "3D project" },
+  es: { loading: "Cargando el proyecto…", load2: "Cargando…", bad: "Enlace inválido", badMsg: "Pide un enlace nuevo a tu diseñador.", your: "Tu proyecto", proj: "Proyecto",
+        turn: "Gira con un dedo · zoom con dos", ar: "Ver en tu casa", coach: "Apunta el celular al <b>piso</b> y muévelo despacio de un lado a otro.<br><br>Cuando aparezca, <b>arrastra</b> con un dedo para moverlo y <b>gira</b> con dos.",
+        hint: "Arrastra para girar · dos dedos para zoom", top: "Vista superior", front: "De frente", full: "Pantalla completa",
+        howT: "Ver en tu casa (realidad aumentada)", how1: "Toca <b>Ver en tu casa</b>.", how2: "Párate en el espacio y apunta la cámara al <b>piso</b>.",
+        how3: "Mueve el celular despacio hasta que el proyecto aparezca en tamaño real.", how4: "Arrástralo a su lugar y camina alrededor.",
+        qr: "Apunta la cámara del celular<br>para verlo en tu casa", arFail: "No se pudo abrir la realidad aumentada en este dispositivo. Actualiza Google Play Services para RA (Android) o usa Safari (iPhone).",
+        err: "No se pudo abrir este proyecto. El enlace puede haber vencido.", alt: "Proyecto en 3D" },
+  pt: { loading: "Carregando o projeto…", load2: "Carregando…", bad: "Link inválido", badMsg: "Peça um link novo ao seu projetista.", your: "Seu projeto", proj: "Projeto",
+        turn: "Gire com um dedo · zoom com dois", ar: "Ver na sua casa", coach: "Aponte o celular para o <b>chão</b> e mova devagar de um lado para o outro.<br><br>Quando aparecer, <b>arraste</b> com um dedo para mudar de lugar e <b>gire</b> com dois.",
+        hint: "Arraste para girar · dois dedos para zoom", top: "Vista de cima", front: "De frente", full: "Tela cheia",
+        howT: "Ver na sua casa (realidade aumentada)", how1: "Toque em <b>Ver na sua casa</b>.", how2: "Fique em pé no ambiente e aponte a câmera para o <b>chão</b>.",
+        how3: "Mova o celular devagar até o projeto aparecer no tamanho real.", how4: "Arraste para encaixar no lugar e ande em volta.",
+        qr: "Aponte a câmera do celular<br>para ver na sua casa", arFail: "Não deu para abrir a realidade aumentada neste aparelho. Atualize o Google Play Services para RA (Android) ou use o Safari (iPhone).",
+        err: "Não foi possível abrir este projeto. O link pode ter expirado.", alt: "Projeto em 3D" },
+};
+const pick = l => (l && TX[l.slice(0, 2)]) ? l.slice(0, 2) : null;
+let L = TX[pick(new URLSearchParams(location.search).get("lang")) || pick(navigator.language) || "en"];
+$("title").textContent = L.loading; $("msg").textContent = L.load2;
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
-  $("title").textContent = "Link inválido"; $("msg").textContent = "Peça um link novo ao seu projetista.";
+  $("title").textContent = L.bad; $("msg").textContent = L.badMsg;
 } else {
   fetch(SUPA + k + ".json").then(r => r.ok ? r.json() : {}).catch(() => ({})).then(info => {
-    $("title").textContent = (info.name || "Seu projeto") + (info.client ? " · " + info.client : "");
+    // o idioma escolhido no app vale, a não ser que o endereço peça outro (?lang=)
+    const forced = pick(new URLSearchParams(location.search).get("lang"));
+    if (!forced && pick(info.lang)) L = TX[pick(info.lang)];
+    document.documentElement.lang = Object.keys(TX).find(x => TX[x] === L) || "en";
+    $("title").textContent = (info.name || L.your) + (info.client ? " · " + info.client : "");
     $("sub").textContent = info.finish || "";
-    document.title = (info.name || "Projeto") + " · " + (info.company || "KitClos");
+    document.title = (info.name || L.proj) + " · " + (info.company || "KitClos");
     const parts = [];
     if (info.company) parts.push("<b>" + esc(info.company) + "</b>");
     if (info.phone) parts.push('<a href="tel:' + esc(info.phone.replace(/[^+\d]/g, "")) + '">' + esc(info.phone) + "</a>");
     if (info.email) parts.push('<a href="mailto:' + esc(info.email) + '">' + esc(info.email) + "</a>");
-    parts.push("Gire com um dedo · zoom com dois");
+    parts.push(L.turn);
     $("foot").innerHTML = parts.join(" · ");
     const front = (typeof info.theta === "number" ? info.theta : 30) + "deg";
     $("stage").innerHTML =
       '<model-viewer src="' + SUPA + k + '.glb" camera-controls touch-action="pan-y" auto-rotate auto-rotate-delay="3000" rotation-per-second="14deg" ' +
       'shadow-intensity="1" exposure="1.05" environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor" ar-scale="fixed" ' +
-      'camera-orbit="' + front + ' 62deg auto" field-of-view="38deg" min-camera-orbit="auto 10deg auto" max-camera-orbit="auto 88deg auto" interaction-prompt="auto" alt="Projeto em 3D">' +
-      '<button slot="ar-button" class="ar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>Ver na sua casa</button>' +
-      '<div class="coach track"><div>Aponte o celular para o <b>chão</b> e mova devagar de um lado para o outro.<br><br>Quando aparecer, <b>arraste</b> com um dedo para mudar de lugar e <b>gire</b> com dois.</div></div>' +
-      '<div class="hint">Arraste para girar · dois dedos para zoom</div></model-viewer>' +
-      '<div class="tools"><button id="bTop" title="Vista de cima">⤒</button><button id="bFront" title="De frente">◉</button><button id="bFull" title="Tela cheia">⛶</button></div>' +
-      '<div class="howto" id="howto"><button class="x" id="hx">×</button><b>Ver na sua casa (realidade aumentada)</b><ol>' +
-      '<li>Toque em <b>Ver na sua casa</b>.</li><li>Fique em pé na cozinha e aponte a câmera para o <b>chão</b>.</li>' +
-      '<li>Mova o celular devagar até o projeto aparecer no tamanho real.</li><li>Arraste para encaixar no lugar e ande em volta.</li></ol></div>' +
-      '<div class="qr" id="qr"><div id="qrc"></div>Aponte a câmera do celular<br>para ver na sua casa</div>';
+      'camera-orbit="' + front + ' 62deg auto" field-of-view="38deg" min-camera-orbit="auto 10deg auto" max-camera-orbit="auto 88deg auto" interaction-prompt="auto" alt="' + L.alt + '">' +
+      '<button slot="ar-button" class="ar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>' + L.ar + '</button>' +
+      '<div class="coach track"><div>' + L.coach + '</div></div>' +
+      '<div class="hint">' + L.hint + '</div></model-viewer>' +
+      '<div class="tools"><button id="bTop" title="' + L.top + '">⤒</button><button id="bFront" title="' + L.front + '">◉</button><button id="bFull" title="' + L.full + '">⛶</button></div>' +
+      '<div class="howto" id="howto"><button class="x" id="hx">×</button><b>' + L.howT + '</b><ol>' +
+      '<li>' + L.how1 + '</li><li>' + L.how2 + '</li>' +
+      '<li>' + L.how3 + '</li><li>' + L.how4 + '</li></ol></div>' +
+      '<div class="qr" id="qr"><div id="qrc"></div>' + L.qr + '</div>';
     const mv = document.querySelector("model-viewer");
     $("bTop").onclick = () => { mv.cameraOrbit = "0deg 8deg auto"; mv.autoRotate = false; };
     $("bFront").onclick = () => { mv.cameraOrbit = front + " 62deg auto"; mv.autoRotate = false; };
@@ -99,9 +130,9 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
       }
     });
     mv.addEventListener("ar-status", (ev) => {
-      if (ev.detail.status === "failed") alert("Não deu para abrir a realidade aumentada neste aparelho. Atualize o Google Play Services para RA (Android) ou use o Safari (iPhone).");
+      if (ev.detail.status === "failed") alert(L.arFail);
     });
-    mv.addEventListener("error", () => { $("stage").innerHTML = '<div class="msg">Não foi possível abrir este projeto. O link pode ter expirado.</div>'; });
+    mv.addEventListener("error", () => { $("stage").innerHTML = '<div class="msg">' + L.err + '</div>'; });
   });
 }
 </script>
