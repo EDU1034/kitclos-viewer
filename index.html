@@ -270,9 +270,38 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
     // cozinha clara (branca, off-white, creme): a luz "estoura" e some o detalhe das portas.
     // Ao abrir, mede a imagem; se tiver muito branco estourado, troca a curva de luz (ACES) e baixa a exposição.
     let kExp = 1, bright = false, cur = "noon", calibrated = false;
+    // sol de verdade com sombra (como no app): os gabinetes, a ilha e a mesa fazem sombra no piso e uns nos outros
+    const SUN = { morning: { i: 0.75, dir: [0.8, 0.55, -0.35], col: 0xeef3ff }, noon: { i: 0.85, dir: [-0.35, 1.0, -0.45], col: 0xfff3e6 },
+      afternoon: { i: 0.95, dir: [-0.85, 0.5, 0.3], col: 0xffd2a0 }, night: { i: 0.0, dir: [0, 1, 0], col: 0xffd9a8 } };
+    let sun = null;
+    const setSun = (m) => {
+      if (!sun) return; const v = SUN[m], c = sun.c, R = sun.R, l = Math.hypot(...v.dir);
+      sun.L.intensity = v.i; sun.L.color.setHex(v.col); sun.L.visible = v.i > 0;
+      sun.L.position.set(c.x + v.dir[0] / l * R * 3, c.y + v.dir[1] / l * R * 3, c.z + v.dir[2] / l * R * 3);
+      sun.sc.queueRender && sun.sc.queueRender();
+    };
+    mv.addEventListener("load", async () => {
+      if (info.ar && arReady) return;
+      // modelo recarregado (voltou do AR): as peças novas também fazem e recebem sombra
+      if (sun) { sun.sc.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; if (o.material) o.material.needsUpdate = true; } }); setSun(cur); return; }
+      try {
+        const T = await import("three");
+        const find = (o, d) => { let pr = o; while (pr) { const k = Object.getOwnPropertySymbols(pr).find(x => x.description === d); if (k) return o[k]; pr = Object.getPrototypeOf(pr); } return null; };
+        const sc = find(mv, "scene"), rr = find(mv, "renderer"); if (!sc || !rr || !rr.threeRenderer) return;
+        const tr = rr.threeRenderer; tr.shadowMap.enabled = true; tr.shadowMap.type = T.PCFSoftShadowMap;
+        const box = new T.Box3();
+        sc.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; box.expandByObject(o); if (o.material) o.material.needsUpdate = true; } });
+        const c = box.getCenter(new T.Vector3()), sz = box.getSize(new T.Vector3()), R = Math.max(sz.x, sz.z) * 0.8;
+        const L = new T.DirectionalLight(0xffffff, 0.85);
+        L.castShadow = true; L.shadow.mapSize.set(2048, 2048); L.shadow.bias = -0.0004; L.shadow.normalBias = 0.02; L.shadow.radius = 4;
+        const k = L.shadow.camera; k.left = -R; k.right = R; k.top = R; k.bottom = -R; k.near = 0.1; k.far = R * 8; k.updateProjectionMatrix();
+        L.target.position.copy(c); sc.add(L); sc.add(L.target);
+        sun = { L, sc, c, R }; setSun(cur); apply(cur);
+      } catch (e) { console.warn("sol", e); }
+    });
     const apply = (m) => {
-      cur = m; const v = LIGHT[m];
-      mv.exposure = v.exp * kExp; mv.shadowIntensity = Math.min(2, v.sh * (bright ? 1.3 : 1)); mv.shadowSoftness = v.soft;
+      cur = m; const v = LIGHT[m]; setSun(m);
+      mv.exposure = v.exp * kExp * (sun && SUN[m].i > 0 ? 0.88 : 1); mv.shadowIntensity = Math.min(2, v.sh * (bright ? 1.3 : 1)); mv.shadowSoftness = v.soft;
       mv.style.filter = bright ? v.f.replace(/brightness\(([\d.]+)\)/, (_, x) => "brightness(" + Math.min(0.97, +x) + ")") : v.f;
       mv.style.background = v.bg;
       document.querySelectorAll("#light button[data-m]").forEach(x => x.classList.toggle("on", x.dataset.m === m));
