@@ -48,6 +48,12 @@
   .howto .x { position:absolute; right:10px; top:6px; background:none; border:0; color:var(--muted); font-size:20px; }
   .hint { position:absolute; top:12px; left:50%; transform:translateX(-50%); background:rgba(10,18,32,.75); padding:6px 12px; border-radius:999px; font-size:12px; color:var(--muted); }
   .msg { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:30px; color:var(--muted); }
+.gal{position:absolute;inset:0;z-index:7;display:none;background:#05080F;align-items:center;justify-content:center}
+.gal img{max-width:100%;max-height:100%;object-fit:contain;touch-action:pinch-zoom}
+.gal .gx{position:absolute;right:12px;top:12px;width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(10,18,32,.85);color:#fff;font-size:18px;z-index:2}
+.gal .ga{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:64px;border:0;border-radius:12px;background:rgba(10,18,32,.6);color:#fff;font-size:34px;z-index:2}
+.gal .gl{left:10px}.gal .gr{right:10px}
+.gal .gcap{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(10,18,32,.8);padding:7px 14px;border-radius:999px;font-size:12px;color:#C9D6E6;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
 .photo{position:absolute;inset:0;z-index:6;display:none;background:#0A1220}
 .photo canvas{position:absolute;inset:0;width:100%;height:100%}
 .photo .bar{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:10px;align-items:center;z-index:2}
@@ -83,21 +89,21 @@ const TX = {
         howT: "See it in your home (augmented reality)", how1: "Tap <b>See it in your home</b>.", how2: "Stand in the room and point the camera at the <b>floor</b>.",
         how3: "Move the phone slowly until the project appears at real size.", how4: "Drag it into place and walk around it.",
         qr: "Point your phone camera<br>to see it in your home", arFail: "Augmented reality couldn't open on this device. Update Google Play Services for AR (Android) or use Safari (iPhone).",
-        err: "This project couldn't be opened. The link may have expired.", photo: "📸 Realistic photo", photoBusy: "Developing the photo…", photoDone: "Photo ready", photoSave: "Save photo", photoBack: "Back to 3D", photoFail: "This device can't make the realistic photo. Try on a computer or a newer phone.", alt: "3D project" },
+        err: "This project couldn't be opened. The link may have expired.", gal: "🖼 Photos", galNote: "realistic illustration made by AI · the 3D shows the exact design", photo: "📸 Realistic photo", photoBusy: "Developing the photo…", photoDone: "Photo ready", photoSave: "Save photo", photoBack: "Back to 3D", photoFail: "This device can't make the realistic photo. Try on a computer or a newer phone.", alt: "3D project" },
   es: { loading: "Cargando el proyecto…", load2: "Cargando…", bad: "Enlace inválido", badMsg: "Pide un enlace nuevo a tu diseñador.", your: "Tu proyecto", proj: "Proyecto",
         turn: "Gira con un dedo · zoom con dos", morning: "Mañana", noon: "Mediodía", afternoon: "Tarde", night: "Noche", ar: "Ver en tu casa", arGo: "Listo — toca para abrir la cámara", coach: "Apunta el celular al <b>piso</b> y muévelo despacio de un lado a otro.<br><br>Cuando aparezca, <b>arrastra</b> con un dedo para moverlo y <b>gira</b> con dos.",
         hint: "Arrastra para girar · dos dedos para zoom", top: "Vista superior", front: "De frente", full: "Pantalla completa", inside: "Estar adentro (360°)", outside: "Volver afuera",
         howT: "Ver en tu casa (realidad aumentada)", how1: "Toca <b>Ver en tu casa</b>.", how2: "Párate en el espacio y apunta la cámara al <b>piso</b>.",
         how3: "Mueve el celular despacio hasta que el proyecto aparezca en tamaño real.", how4: "Arrástralo a su lugar y camina alrededor.",
         qr: "Apunta la cámara del celular<br>para verlo en tu casa", arFail: "No se pudo abrir la realidad aumentada en este dispositivo. Actualiza Google Play Services para RA (Android) o usa Safari (iPhone).",
-        err: "No se pudo abrir este proyecto. El enlace puede haber vencido.", photo: "📸 Foto realista", photoBusy: "Revelando la foto…", photoDone: "Foto lista", photoSave: "Guardar foto", photoBack: "Volver al 3D", photoFail: "Este aparato no logra hacer la foto realista. Prueba en una computadora o un celular más nuevo.", alt: "Proyecto en 3D" },
+        err: "No se pudo abrir este proyecto. El enlace puede haber vencido.", gal: "🖼 Fotos", galNote: "ilustración realista hecha por IA · el 3D muestra el proyecto exacto", photo: "📸 Foto realista", photoBusy: "Revelando la foto…", photoDone: "Foto lista", photoSave: "Guardar foto", photoBack: "Volver al 3D", photoFail: "Este aparato no logra hacer la foto realista. Prueba en una computadora o un celular más nuevo.", alt: "Proyecto en 3D" },
   pt: { loading: "Carregando o projeto…", load2: "Carregando…", bad: "Link inválido", badMsg: "Peça um link novo ao seu projetista.", your: "Seu projeto", proj: "Projeto",
         turn: "Gire com um dedo · zoom com dois", morning: "Manhã", noon: "Meio-dia", afternoon: "Tarde", night: "Noite", ar: "Ver na sua casa", arGo: "Pronto — toque para abrir a câmera", coach: "Aponte o celular para o <b>chão</b> e mova devagar de um lado para o outro.<br><br>Quando aparecer, <b>arraste</b> com um dedo para mudar de lugar e <b>gire</b> com dois.",
         hint: "Arraste para girar · dois dedos para zoom", top: "Vista de cima", front: "De frente", full: "Tela cheia", inside: "Ficar dentro (360°)", outside: "Voltar para fora",
         howT: "Ver na sua casa (realidade aumentada)", how1: "Toque em <b>Ver na sua casa</b>.", how2: "Fique em pé no ambiente e aponte a câmera para o <b>chão</b>.",
         how3: "Mova o celular devagar até o projeto aparecer no tamanho real.", how4: "Arraste para encaixar no lugar e ande em volta.",
         qr: "Aponte a câmera do celular<br>para ver na sua casa", arFail: "Não deu para abrir a realidade aumentada neste aparelho. Atualize o Google Play Services para RA (Android) ou use o Safari (iPhone).",
-        err: "Não foi possível abrir este projeto. O link pode ter expirado.", photo: "📸 Foto realista", photoBusy: "Revelando a foto…", photoDone: "Foto pronta", photoSave: "Salvar foto", photoBack: "Voltar ao 3D", photoFail: "Este aparelho não conseguiu fazer a foto realista. Tente num computador ou num celular mais novo.", alt: "Projeto em 3D" },
+        err: "Não foi possível abrir este projeto. O link pode ter expirado.", gal: "🖼 Fotos", galNote: "ilustração realista feita por IA · o 3D mostra o projeto exato", photo: "📸 Foto realista", photoBusy: "Revelando a foto…", photoDone: "Foto pronta", photoSave: "Salvar foto", photoBack: "Voltar ao 3D", photoFail: "Este aparelho não conseguiu fazer a foto realista. Tente num computador ou num celular mais novo.", alt: "Projeto em 3D" },
 };
 const pick = l => (l && TX[l.slice(0, 2)]) ? l.slice(0, 2) : null;
 let L = TX[pick(new URLSearchParams(location.search).get("lang")) || pick(navigator.language) || "en"];
@@ -120,6 +126,7 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
     if (info.email) parts.push('<a href="mailto:' + esc(info.email) + '">' + esc(info.email) + "</a>");
     parts.push(L.turn);
     $("foot").innerHTML = parts.join(" · ");
+    const photos = Array.isArray(info.photos) ? info.photos.filter(x => typeof x === "string" && /^[\w.-]+\.jpg$/.test(x)) : [];
     const th = (typeof info.theta === "number" ? info.theta : 30);
     const front = th + "deg";
     // links com paredes: a câmera gira só pelo lado de dentro (até 80° para cada lado), nunca por trás dos armários
@@ -132,7 +139,9 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
       '<button slot="ar-button" class="ar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>' + L.ar + '</button>' +
       '<div class="coach track"><div>' + L.coach + '</div></div>' +
       '<div class="hint">' + L.hint + '</div></model-viewer>' +
-      '<div class="light" id="light">' + ["morning", "noon", "afternoon", "night"].map(m => '<button data-m="' + m + '"' + (m === "noon" ? ' class="on"' : '') + '>' + L[m] + '</button>').join("") + '<button id="bPhoto" class="pbtn">' + L.photo + '</button></div>' +
+      '<div class="light" id="light">' + ["morning", "noon", "afternoon", "night"].map(m => '<button data-m="' + m + '"' + (m === "noon" ? ' class="on"' : '') + '>' + L[m] + '</button>').join("") + (photos.length ? '<button id="bGal" class="pbtn">' + L.gal + ' (' + photos.length + ')</button>' : '') + '<button id="bPhoto" class="pbtn"' + (photos.length ? ' style="background:rgba(255,255,255,.12);box-shadow:none"' : '') + '>' + L.photo + '</button></div>' +
+      '<div class="gal" id="gal"><img id="gimg" alt=""><button class="gx" id="gx">✕</button><button class="ga gl" id="gl">‹</button><button class="ga gr" id="gr">›</button>' +
+      '<div class="gcap"><span id="gn"></span> · ' + L.galNote + '</div></div>' +
       '<div class="tools"><button id="bTop" title="' + L.top + '">⤒</button><button id="bFront" title="' + L.front + '">◉</button><button id="bFull" title="' + L.full + '">⛶</button></div>' +
       '<button id="b360" class="in360">' + L.inside + '</button>' +
       '<div class="photo" id="photo"><canvas id="ptc"></canvas><div class="prog" id="pprog"></div>' +
@@ -245,6 +254,18 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
         }
       } catch (_) {}
     });
+    // Fotos realistas feitas pela IA no app (aba Fotos): abre por cima do 3D, arrasta ou setas para trocar
+    if (photos.length) {
+      let gi = 0;
+      const showG = i => { gi = (i + photos.length) % photos.length; $("gimg").src = SUPA + photos[gi]; $("gn").textContent = (gi + 1) + "/" + photos.length; };
+      $("bGal").onclick = () => { $("gal").style.display = "flex"; showG(gi); };
+      $("gx").onclick = () => { $("gal").style.display = "none"; };
+      $("gl").onclick = () => showG(gi - 1); $("gr").onclick = () => showG(gi + 1);
+      let sx0 = null;
+      $("gal").addEventListener("touchstart", e => { if (e.touches.length === 1) sx0 = e.touches[0].clientX; }, { passive: true });
+      $("gal").addEventListener("touchend", e => { if (sx0 == null) return; const dx = e.changedTouches[0].clientX - sx0; sx0 = null; if (Math.abs(dx) > 50) showG(gi + (dx < 0 ? 1 : -1)); });
+      photos.forEach(p => { const im = new Image(); im.src = SUPA + p; }); // já baixa as 4
+    }
     // Foto realista: o mesmo modelo, do mesmo ângulo, desenhado com traçado de raios (luz rebatendo nas paredes,
     // sombras suaves e reflexos de verdade). Roda no próprio celular, sem IA e sem custo; vai ficando nítida em segundos.
     const SKY = {
