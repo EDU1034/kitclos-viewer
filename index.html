@@ -104,11 +104,15 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
     if (info.email) parts.push('<a href="mailto:' + esc(info.email) + '">' + esc(info.email) + "</a>");
     parts.push(L.turn);
     $("foot").innerHTML = parts.join(" · ");
-    const front = (typeof info.theta === "number" ? info.theta : 30) + "deg";
+    const th = (typeof info.theta === "number" ? info.theta : 30);
+    const front = th + "deg";
+    // links com paredes: a câmera gira só pelo lado de dentro (até 80° para cada lado), nunca por trás dos armários
+    const minO = info.ar ? (th - 80) + "deg 10deg auto" : "auto 10deg auto";
+    const maxO = info.ar ? (th + 80) + "deg 88deg auto" : "auto 88deg auto";
     $("stage").innerHTML =
-      '<model-viewer src="' + SUPA + k + '.glb" camera-controls touch-action="pan-y" auto-rotate auto-rotate-delay="3000" rotation-per-second="14deg" ' +
+      '<model-viewer src="' + SUPA + k + '.glb" camera-controls touch-action="pan-y" ' + (info.ar ? '' : 'auto-rotate auto-rotate-delay="3000" rotation-per-second="14deg" ') +
       'shadow-intensity="1" exposure="1.05" environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor" ar-scale="fixed" ' +
-      'camera-orbit="' + front + ' 62deg auto" field-of-view="38deg" min-camera-orbit="auto 10deg auto" max-camera-orbit="auto 88deg auto" interaction-prompt="auto" alt="' + L.alt + '">' +
+      'camera-orbit="' + front + ' 62deg auto" field-of-view="38deg" min-camera-orbit="' + minO + '" max-camera-orbit="' + maxO + '" interaction-prompt="auto" alt="' + L.alt + '">' +
       '<button slot="ar-button" class="ar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>' + L.ar + '</button>' +
       '<div class="coach track"><div>' + L.coach + '</div></div>' +
       '<div class="hint">' + L.hint + '</div></model-viewer>' +
@@ -123,7 +127,7 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
     // 360°: câmera parada no meio da cozinha, na altura dos olhos, olhando em volta
     let inside = false;
     const outsideView = () => {
-      mv.cameraTarget = "auto auto auto"; mv.minCameraOrbit = "auto 10deg auto"; mv.maxCameraOrbit = "auto 88deg auto";
+      mv.cameraTarget = "auto auto auto"; mv.minCameraOrbit = minO; mv.maxCameraOrbit = maxO;
       mv.fieldOfView = "38deg"; mv.cameraOrbit = front + " 62deg auto";
     };
     $("b360").onclick = () => {
@@ -136,7 +140,7 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
       mv.minCameraOrbit = "auto 35deg 0.05m"; mv.maxCameraOrbit = "auto 145deg 0.2m"; mv.maxFieldOfView = "95deg";
       mv.fieldOfView = "80deg"; mv.cameraOrbit = front + " 90deg 0.1m";
     };
-    $("bTop").onclick = () => { if (inside) $("b360").onclick(); mv.cameraOrbit = "0deg 8deg auto"; mv.autoRotate = false; };
+    $("bTop").onclick = () => { if (inside) $("b360").onclick(); mv.cameraOrbit = front + " 8deg auto"; mv.autoRotate = false; };
     $("bFront").onclick = () => { if (inside) $("b360").onclick(); mv.cameraOrbit = front + " 62deg auto"; mv.autoRotate = false; };
     $("bFull").onclick = () => { const e = document.documentElement; (e.requestFullscreen || e.webkitRequestFullscreen || (()=>{})).call(e); };
     $("hx").onclick = () => { $("howto").style.display = "none"; try { localStorage.setItem("kc_howto", "1"); } catch (_) {} };
