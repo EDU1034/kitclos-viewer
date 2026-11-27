@@ -22,6 +22,10 @@
         border-radius:999px; padding:14px 22px; font-size:16px; font-weight:700; box-shadow:0 6px 24px rgba(79,176,255,.45); }
   footer { padding:10px 18px 16px; font-size:13px; color:var(--muted); display:flex; flex-wrap:wrap; gap:6px 16px; }
   footer a { color:var(--accent); text-decoration:none; }
+  .light { position:absolute; left:12px; top:12px; z-index:3; display:flex; gap:4px; padding:4px; border-radius:14px; background:rgba(10,18,32,.8); border:1px solid rgba(255,255,255,.15); }
+  .light button { border:0; border-radius:10px; padding:9px 12px; min-height:40px; background:transparent; color:#EAF2FA; font:600 14px system-ui,sans-serif; }
+  .light button.on { background:#2F66D6; color:#fff; }
+  model-viewer { transition: filter .6s ease; }
   .tools { position:absolute; right:12px; top:12px; display:flex; flex-direction:column; gap:8px; z-index:3; }
   .tools button { width:44px; height:44px; border-radius:12px; border:1px solid rgba(255,255,255,.15); background:rgba(10,18,32,.8); color:#EAF2FA; font-size:18px; }
   .ar { display:flex; align-items:center; gap:10px; }
@@ -58,21 +62,21 @@ const $ = id => document.getElementById(id);
 // textos da página em inglês (padrão), espanhol e português: vem do app ("lang") ou do idioma do celular
 const TX = {
   en: { loading: "Loading the project…", load2: "Loading…", bad: "Invalid link", badMsg: "Ask your designer for a new link.", your: "Your project", proj: "Project",
-        turn: "Turn with one finger · zoom with two", ar: "See it in your home", arGo: "Ready — tap to open the camera", coach: "Point the phone at the <b>floor</b> and move it slowly from side to side.<br><br>When it appears, <b>drag</b> with one finger to move it and <b>rotate</b> with two.",
+        turn: "Turn with one finger · zoom with two", morning: "Morning", noon: "Noon", afternoon: "Afternoon", night: "Night", ar: "See it in your home", arGo: "Ready — tap to open the camera", coach: "Point the phone at the <b>floor</b> and move it slowly from side to side.<br><br>When it appears, <b>drag</b> with one finger to move it and <b>rotate</b> with two.",
         hint: "Drag to rotate · two fingers to zoom", top: "Top view", front: "Front view", full: "Full screen", inside: "Stand inside (360°)", outside: "Back to outside",
         howT: "See it in your home (augmented reality)", how1: "Tap <b>See it in your home</b>.", how2: "Stand in the room and point the camera at the <b>floor</b>.",
         how3: "Move the phone slowly until the project appears at real size.", how4: "Drag it into place and walk around it.",
         qr: "Point your phone camera<br>to see it in your home", arFail: "Augmented reality couldn't open on this device. Update Google Play Services for AR (Android) or use Safari (iPhone).",
         err: "This project couldn't be opened. The link may have expired.", alt: "3D project" },
   es: { loading: "Cargando el proyecto…", load2: "Cargando…", bad: "Enlace inválido", badMsg: "Pide un enlace nuevo a tu diseñador.", your: "Tu proyecto", proj: "Proyecto",
-        turn: "Gira con un dedo · zoom con dos", ar: "Ver en tu casa", arGo: "Listo — toca para abrir la cámara", coach: "Apunta el celular al <b>piso</b> y muévelo despacio de un lado a otro.<br><br>Cuando aparezca, <b>arrastra</b> con un dedo para moverlo y <b>gira</b> con dos.",
+        turn: "Gira con un dedo · zoom con dos", morning: "Mañana", noon: "Mediodía", afternoon: "Tarde", night: "Noche", ar: "Ver en tu casa", arGo: "Listo — toca para abrir la cámara", coach: "Apunta el celular al <b>piso</b> y muévelo despacio de un lado a otro.<br><br>Cuando aparezca, <b>arrastra</b> con un dedo para moverlo y <b>gira</b> con dos.",
         hint: "Arrastra para girar · dos dedos para zoom", top: "Vista superior", front: "De frente", full: "Pantalla completa", inside: "Estar adentro (360°)", outside: "Volver afuera",
         howT: "Ver en tu casa (realidad aumentada)", how1: "Toca <b>Ver en tu casa</b>.", how2: "Párate en el espacio y apunta la cámara al <b>piso</b>.",
         how3: "Mueve el celular despacio hasta que el proyecto aparezca en tamaño real.", how4: "Arrástralo a su lugar y camina alrededor.",
         qr: "Apunta la cámara del celular<br>para verlo en tu casa", arFail: "No se pudo abrir la realidad aumentada en este dispositivo. Actualiza Google Play Services para RA (Android) o usa Safari (iPhone).",
         err: "No se pudo abrir este proyecto. El enlace puede haber vencido.", alt: "Proyecto en 3D" },
   pt: { loading: "Carregando o projeto…", load2: "Carregando…", bad: "Link inválido", badMsg: "Peça um link novo ao seu projetista.", your: "Seu projeto", proj: "Projeto",
-        turn: "Gire com um dedo · zoom com dois", ar: "Ver na sua casa", arGo: "Pronto — toque para abrir a câmera", coach: "Aponte o celular para o <b>chão</b> e mova devagar de um lado para o outro.<br><br>Quando aparecer, <b>arraste</b> com um dedo para mudar de lugar e <b>gire</b> com dois.",
+        turn: "Gire com um dedo · zoom com dois", morning: "Manhã", noon: "Meio-dia", afternoon: "Tarde", night: "Noite", ar: "Ver na sua casa", arGo: "Pronto — toque para abrir a câmera", coach: "Aponte o celular para o <b>chão</b> e mova devagar de um lado para o outro.<br><br>Quando aparecer, <b>arraste</b> com um dedo para mudar de lugar e <b>gire</b> com dois.",
         hint: "Arraste para girar · dois dedos para zoom", top: "Vista de cima", front: "De frente", full: "Tela cheia", inside: "Ficar dentro (360°)", outside: "Voltar para fora",
         howT: "Ver na sua casa (realidade aumentada)", how1: "Toque em <b>Ver na sua casa</b>.", how2: "Fique em pé no ambiente e aponte a câmera para o <b>chão</b>.",
         how3: "Mova o celular devagar até o projeto aparecer no tamanho real.", how4: "Arraste para encaixar no lugar e ande em volta.",
@@ -108,6 +112,7 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
       '<button slot="ar-button" class="ar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>' + L.ar + '</button>' +
       '<div class="coach track"><div>' + L.coach + '</div></div>' +
       '<div class="hint">' + L.hint + '</div></model-viewer>' +
+      '<div class="light" id="light">' + ["morning", "noon", "afternoon", "night"].map(m => '<button data-m="' + m + '"' + (m === "noon" ? ' class="on"' : '') + '>' + L[m] + '</button>').join("") + '</div>' +
       '<div class="tools"><button id="bTop" title="' + L.top + '">⤒</button><button id="bFront" title="' + L.front + '">◉</button><button id="bFull" title="' + L.full + '">⛶</button></div>' +
       '<button id="b360" class="in360">' + L.inside + '</button>' +
       '<div class="howto" id="howto"><button class="x" id="hx">×</button><b>' + L.howT + '</b><ol>' +
@@ -172,6 +177,19 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
       if (ev.detail.status === "failed") alert(L.arFail);
       if (info.ar && ev.detail.status === "not-presenting" && arReady) { arReady = false; mv.src = SRC; arBtn.lastChild.textContent = L.ar; }
     });
+    // luz do dia: manhã (fria e clara), meio-dia (neutra), tarde (quente, sombra forte), noite (luz da casa, quente e baixa)
+    const LIGHT = {
+      morning:   { exp: 1.18, sh: 0.7, soft: 1.0, f: "brightness(1.04) saturate(1.02) hue-rotate(-6deg)", bg: "radial-gradient(circle at 50% 35%, #3a5c86 0%, #142338 75%)" },
+      noon:      { exp: 1.05, sh: 1.0, soft: 0.6, f: "none", bg: "radial-gradient(circle at 50% 40%, #1b2a42 0%, #0A1220 75%)" },
+      afternoon: { exp: 0.98, sh: 1.3, soft: 0.35, f: "sepia(.28) saturate(1.2) brightness(.98)", bg: "radial-gradient(circle at 50% 40%, #5a3d2a 0%, #1a120c 78%)" },
+      night:     { exp: 0.62, sh: 0.45, soft: 1.0, f: "sepia(.38) saturate(1.1) brightness(.86) contrast(1.06)", bg: "radial-gradient(circle at 50% 40%, #121a2a 0%, #03060c 80%)" },
+    };
+    document.querySelectorAll("#light button").forEach(b => b.addEventListener("click", () => {
+      const v = LIGHT[b.dataset.m];
+      mv.exposure = v.exp; mv.shadowIntensity = v.sh; mv.shadowSoftness = v.soft;
+      mv.style.filter = v.f; mv.style.background = v.bg;
+      document.querySelectorAll("#light button").forEach(x => x.classList.toggle("on", x === b));
+    }));
     mv.addEventListener("error", () => { $("stage").innerHTML = '<div class="msg">' + L.err + '</div>'; });
   });
 }
