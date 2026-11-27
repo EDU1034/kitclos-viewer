@@ -269,12 +269,13 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
       try {
         const THREE = await import("three");
         const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
-        const { WebGLPathTracer, GradientEquirectTexture } = await import("three-gpu-pathtracer");
+        const { WebGLPathTracer, GradientEquirectTexture, DenoiseMaterial } = await import("three-gpu-pathtracer");
+        const { FullScreenQuad } = await import("three/examples/jsm/postprocessing/Pass.js");
         if (run.stop) return;
         const cv = $("ptc"), rect = box.getBoundingClientRect();
         const phone = /Android|iPhone|iPad/i.test(navigator.userAgent);
         const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: false, preserveDrawingBuffer: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 2));
+        renderer.setPixelRatio(1);
         renderer.setSize(rect.width, rect.height, false);
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         const sky = SKY[cur] || SKY.noon;
@@ -323,13 +324,21 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
         cam.position.set(t.x + o.radius * Math.sin(o.phi) * Math.sin(o.theta), t.y + o.radius * Math.cos(o.phi), t.z + o.radius * Math.sin(o.phi) * Math.cos(o.theta));
         cam.lookAt(t.x, t.y, t.z); cam.updateMatrixWorld();
         const pt = new WebGLPathTracer(renderer);
-        // rápido: sem ladrilhos (cada amostra é a tela inteira), resolução menor no celular e 3 rebatidas de luz
+        // rápido: sem ladrilhos e no máximo ~0,5 (celular) / 1 megapixel (computador) por passada
         pt.tiles.set(1, 1);
-        pt.renderScale = phone ? 0.6 : 0.85;
+        pt.renderScale = Math.min(1, Math.sqrt((phone ? 0.5e6 : 1.0e6) / Math.max(1, rect.width * rect.height)));
         pt.bounces = 3; pt.filterGlossyFactor = 0.5;
+        pt.minSamples = 2; pt.fadeDuration = 300;
+        // tira o granulado (filtro que alisa sem borrar as bordas): com poucas passadas a foto já sai limpa
+        const den = new FullScreenQuad(new DenoiseMaterial({ map: null, blending: THREE.NoBlending, premultipliedAlpha: renderer.getContextAttributes().premultipliedAlpha }));
+        pt.renderToCanvasCallback = (target, r, quad) => {
+          den.material.map = quad.material.map;
+          den.material.sigma = pt.samples < 40 ? 5.0 : 3.0; den.material.threshold = pt.samples < 40 ? 0.04 : 0.025;
+          const ac = r.autoClear; r.autoClear = false; den.render(r); r.autoClear = ac;
+        };
         pt.setScene(scene, cam);
         // a foto fica pronta num tempo fixo (uns 12 s no celular): mede quanto o aparelho leva por amostra e decide quantas dá
-        const budget = phone ? 12000 : 9000, minS = 24, maxS = phone ? 160 : 300;
+        const budget = phone ? 10000 : 7000, minS = 16, maxS = phone ? 120 : 200;
         const t0 = performance.now();
         let goal = maxS;
         $("psave").style.display = ""; // dá para salvar a qualquer momento
