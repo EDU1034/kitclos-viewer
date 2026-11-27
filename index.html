@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Seu projeto em 3D · KitClos</title>
 <meta name="theme-color" content="#0A1220">
+<!-- foto realista: three.js + path tracer, só carregam quando o cliente toca em "Foto realista" -->
+<script type="importmap">{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/examples/jsm/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+  "three-mesh-bvh":"https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.8.3/build/index.module.js",
+  "three-gpu-pathtracer":"https://cdn.jsdelivr.net/npm/three-gpu-pathtracer@0.0.23/build/index.module.js"}}</script>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
 <style>
   :root { --bg:#0A1220; --ink:#EAF2FA; --muted:#9FB0C3; --accent:#4FB0FF; }
@@ -22,7 +28,7 @@
         border-radius:999px; padding:14px 22px; font-size:16px; font-weight:700; box-shadow:0 6px 24px rgba(79,176,255,.45); }
   footer { padding:10px 18px 16px; font-size:13px; color:var(--muted); display:flex; flex-wrap:wrap; gap:6px 16px; }
   footer a { color:var(--accent); text-decoration:none; }
-  .light { position:absolute; left:12px; top:12px; z-index:3; display:flex; gap:4px; padding:4px; border-radius:14px; background:rgba(10,18,32,.8); border:1px solid rgba(255,255,255,.15); }
+  .light { position:absolute; left:12px; top:12px; z-index:3; display:flex; flex-wrap:wrap; max-width:calc(100% - 80px); gap:4px; padding:4px; border-radius:14px; background:rgba(10,18,32,.8); border:1px solid rgba(255,255,255,.15); }
   .light button { border:0; border-radius:10px; padding:9px 12px; min-height:40px; background:transparent; color:#EAF2FA; font:600 14px system-ui,sans-serif; }
   .light button.on { background:#2F66D6; color:#fff; }
   model-viewer { transition: filter .6s ease; }
@@ -42,6 +48,15 @@
   .howto .x { position:absolute; right:10px; top:6px; background:none; border:0; color:var(--muted); font-size:20px; }
   .hint { position:absolute; top:12px; left:50%; transform:translateX(-50%); background:rgba(10,18,32,.75); padding:6px 12px; border-radius:999px; font-size:12px; color:var(--muted); }
   .msg { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:30px; color:var(--muted); }
+.photo{position:absolute;inset:0;z-index:6;display:none;background:#0A1220}
+.photo canvas{position:absolute;inset:0;width:100%;height:100%}
+.photo .bar{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:10px;align-items:center;z-index:2}
+.photo .bar button{white-space:nowrap;border:0;border-radius:999px;padding:12px 18px;font:700 15px system-ui,sans-serif}
+.photo .back{background:rgba(10,18,32,.85);color:#EAF2FA;border:1px solid rgba(255,255,255,.2)!important}
+.photo .save{background:var(--accent);color:#04111F}
+.photo .prog{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(10,18,32,.8);padding:8px 14px;border-radius:999px;font-size:13px;color:#EAF2FA;z-index:2}
+.light .pbtn{margin-left:4px;background:linear-gradient(135deg,#4FB0FF,#2F66D6);color:#fff;box-shadow:0 2px 10px rgba(47,102,214,.45)}
+@media (max-width:600px){.hint{display:none}}
 .in360{position:absolute;left:50%;transform:translateX(-50%);bottom:84px;z-index:5;border:0;border-radius:24px;padding:12px 20px;background:rgba(10,18,32,.85);border:1px solid rgba(255,255,255,.2);color:#EAF2FA;font:600 15px system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.35)}
 </style>
 </head>
@@ -67,21 +82,21 @@ const TX = {
         howT: "See it in your home (augmented reality)", how1: "Tap <b>See it in your home</b>.", how2: "Stand in the room and point the camera at the <b>floor</b>.",
         how3: "Move the phone slowly until the project appears at real size.", how4: "Drag it into place and walk around it.",
         qr: "Point your phone camera<br>to see it in your home", arFail: "Augmented reality couldn't open on this device. Update Google Play Services for AR (Android) or use Safari (iPhone).",
-        err: "This project couldn't be opened. The link may have expired.", alt: "3D project" },
+        err: "This project couldn't be opened. The link may have expired.", photo: "📸 Realistic photo", photoBusy: "Developing the photo…", photoDone: "Photo ready", photoSave: "Save photo", photoBack: "Back to 3D", photoFail: "This device can't make the realistic photo. Try on a computer or a newer phone.", alt: "3D project" },
   es: { loading: "Cargando el proyecto…", load2: "Cargando…", bad: "Enlace inválido", badMsg: "Pide un enlace nuevo a tu diseñador.", your: "Tu proyecto", proj: "Proyecto",
         turn: "Gira con un dedo · zoom con dos", morning: "Mañana", noon: "Mediodía", afternoon: "Tarde", night: "Noche", ar: "Ver en tu casa", arGo: "Listo — toca para abrir la cámara", coach: "Apunta el celular al <b>piso</b> y muévelo despacio de un lado a otro.<br><br>Cuando aparezca, <b>arrastra</b> con un dedo para moverlo y <b>gira</b> con dos.",
         hint: "Arrastra para girar · dos dedos para zoom", top: "Vista superior", front: "De frente", full: "Pantalla completa", inside: "Estar adentro (360°)", outside: "Volver afuera",
         howT: "Ver en tu casa (realidad aumentada)", how1: "Toca <b>Ver en tu casa</b>.", how2: "Párate en el espacio y apunta la cámara al <b>piso</b>.",
         how3: "Mueve el celular despacio hasta que el proyecto aparezca en tamaño real.", how4: "Arrástralo a su lugar y camina alrededor.",
         qr: "Apunta la cámara del celular<br>para verlo en tu casa", arFail: "No se pudo abrir la realidad aumentada en este dispositivo. Actualiza Google Play Services para RA (Android) o usa Safari (iPhone).",
-        err: "No se pudo abrir este proyecto. El enlace puede haber vencido.", alt: "Proyecto en 3D" },
+        err: "No se pudo abrir este proyecto. El enlace puede haber vencido.", photo: "📸 Foto realista", photoBusy: "Revelando la foto…", photoDone: "Foto lista", photoSave: "Guardar foto", photoBack: "Volver al 3D", photoFail: "Este aparato no logra hacer la foto realista. Prueba en una computadora o un celular más nuevo.", alt: "Proyecto en 3D" },
   pt: { loading: "Carregando o projeto…", load2: "Carregando…", bad: "Link inválido", badMsg: "Peça um link novo ao seu projetista.", your: "Seu projeto", proj: "Projeto",
         turn: "Gire com um dedo · zoom com dois", morning: "Manhã", noon: "Meio-dia", afternoon: "Tarde", night: "Noite", ar: "Ver na sua casa", arGo: "Pronto — toque para abrir a câmera", coach: "Aponte o celular para o <b>chão</b> e mova devagar de um lado para o outro.<br><br>Quando aparecer, <b>arraste</b> com um dedo para mudar de lugar e <b>gire</b> com dois.",
         hint: "Arraste para girar · dois dedos para zoom", top: "Vista de cima", front: "De frente", full: "Tela cheia", inside: "Ficar dentro (360°)", outside: "Voltar para fora",
         howT: "Ver na sua casa (realidade aumentada)", how1: "Toque em <b>Ver na sua casa</b>.", how2: "Fique em pé no ambiente e aponte a câmera para o <b>chão</b>.",
         how3: "Mova o celular devagar até o projeto aparecer no tamanho real.", how4: "Arraste para encaixar no lugar e ande em volta.",
         qr: "Aponte a câmera do celular<br>para ver na sua casa", arFail: "Não deu para abrir a realidade aumentada neste aparelho. Atualize o Google Play Services para RA (Android) ou use o Safari (iPhone).",
-        err: "Não foi possível abrir este projeto. O link pode ter expirado.", alt: "Projeto em 3D" },
+        err: "Não foi possível abrir este projeto. O link pode ter expirado.", photo: "📸 Foto realista", photoBusy: "Revelando a foto…", photoDone: "Foto pronta", photoSave: "Salvar foto", photoBack: "Voltar ao 3D", photoFail: "Este aparelho não conseguiu fazer a foto realista. Tente num computador ou num celular mais novo.", alt: "Projeto em 3D" },
 };
 const pick = l => (l && TX[l.slice(0, 2)]) ? l.slice(0, 2) : null;
 let L = TX[pick(new URLSearchParams(location.search).get("lang")) || pick(navigator.language) || "en"];
@@ -116,9 +131,11 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
       '<button slot="ar-button" class="ar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>' + L.ar + '</button>' +
       '<div class="coach track"><div>' + L.coach + '</div></div>' +
       '<div class="hint">' + L.hint + '</div></model-viewer>' +
-      '<div class="light" id="light">' + ["morning", "noon", "afternoon", "night"].map(m => '<button data-m="' + m + '"' + (m === "noon" ? ' class="on"' : '') + '>' + L[m] + '</button>').join("") + '</div>' +
+      '<div class="light" id="light">' + ["morning", "noon", "afternoon", "night"].map(m => '<button data-m="' + m + '"' + (m === "noon" ? ' class="on"' : '') + '>' + L[m] + '</button>').join("") + '<button id="bPhoto" class="pbtn">' + L.photo + '</button></div>' +
       '<div class="tools"><button id="bTop" title="' + L.top + '">⤒</button><button id="bFront" title="' + L.front + '">◉</button><button id="bFull" title="' + L.full + '">⛶</button></div>' +
       '<button id="b360" class="in360">' + L.inside + '</button>' +
+      '<div class="photo" id="photo"><canvas id="ptc"></canvas><div class="prog" id="pprog"></div>' +
+      '<div class="bar"><button class="back" id="pback">' + L.photoBack + '</button><button class="save" id="psave" style="display:none">' + L.photoSave + '</button></div></div>' +
       '<div class="howto" id="howto"><button class="x" id="hx">×</button><b>' + L.howT + '</b><ol>' +
       '<li>' + L.how1 + '</li><li>' + L.how2 + '</li>' +
       '<li>' + L.how3 + '</li><li>' + L.how4 + '</li></ol></div>' +
@@ -196,9 +213,9 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
       mv.exposure = v.exp * kExp; mv.shadowIntensity = Math.min(2, v.sh * (bright ? 1.3 : 1)); mv.shadowSoftness = v.soft;
       mv.style.filter = bright ? v.f.replace(/brightness\(([\d.]+)\)/, (_, x) => "brightness(" + Math.min(0.97, +x) + ")") : v.f;
       mv.style.background = v.bg;
-      document.querySelectorAll("#light button").forEach(x => x.classList.toggle("on", x.dataset.m === m));
+      document.querySelectorAll("#light button[data-m]").forEach(x => x.classList.toggle("on", x.dataset.m === m));
     };
-    document.querySelectorAll("#light button").forEach(b => b.addEventListener("click", () => apply(b.dataset.m)));
+    document.querySelectorAll("#light button[data-m]").forEach(b => b.addEventListener("click", () => apply(b.dataset.m)));
     const pause = ms => new Promise(r => setTimeout(r, ms));
     const measure = async () => {
       const blob = await mv.toBlob({ idealAspect: false });
@@ -227,6 +244,102 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
         }
       } catch (_) {}
     });
+    // Foto realista: o mesmo modelo, do mesmo ângulo, desenhado com traçado de raios (luz rebatendo nas paredes,
+    // sombras suaves e reflexos de verdade). Roda no próprio celular, sem IA e sem custo; vai ficando nítida em segundos.
+    const SKY = {
+      morning:   { top: 0xdfeaff, bottom: 0x8a8f99, env: 1.15, sun: 0xfff2e0, sunI: 2.2, el: 22, az: 60, exp: 1.0 },
+      noon:      { top: 0xffffff, bottom: 0x9a9a96, env: 1.25, sun: 0xffffff, sunI: 2.6, el: 62, az: 20, exp: 1.0 },
+      afternoon: { top: 0xffe2c0, bottom: 0x8f7a66, env: 1.0,  sun: 0xffc58a, sunI: 2.4, el: 18, az: -60, exp: 1.0 },
+      night:     { top: 0x1a2236, bottom: 0x0c0f16, env: 0.25, sun: 0xffd9a0, sunI: 0.0, el: 60, az: 0, exp: 1.6 },
+    };
+    let ptRun = null;
+    const stopPhoto = () => { if (ptRun) { ptRun.stop = true; ptRun = null; } $("photo").style.display = "none"; };
+    $("pback").onclick = stopPhoto;
+    $("psave").onclick = () => {
+      const a = document.createElement("a"); a.download = (k || "kitclos") + ".jpg";
+      a.href = $("ptc").toDataURL("image/jpeg", 0.92); a.click();
+    };
+    $("bPhoto").onclick = async () => {
+      if (inside) $("b360").onclick();
+      mv.autoRotate = false;
+      const box = $("photo"); box.style.display = "block"; $("psave").style.display = "none";
+      $("pprog").textContent = L.photoBusy;
+      const run = { stop: false }; ptRun = run;
+      try {
+        const THREE = await import("three");
+        const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
+        const { WebGLPathTracer, GradientEquirectTexture } = await import("three-gpu-pathtracer");
+        if (run.stop) return;
+        const cv = $("ptc"), rect = box.getBoundingClientRect();
+        const phone = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: false, preserveDrawingBuffer: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 2));
+        renderer.setSize(rect.width, rect.height, false);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        const sky = SKY[cur] || SKY.noon;
+        renderer.toneMappingExposure = sky.exp * (bright ? 0.9 : 1.05);
+        const scene = new THREE.Scene();
+        const gltf = await new GLTFLoader().loadAsync(mv.src);
+        if (run.stop) { renderer.dispose(); return; }
+        // o traçado de raios decide frente/verso pela ordem dos vértices: acerta a ordem para bater com a normal
+        // (senão bancada e tampos saem pretos)
+        gltf.scene.traverse(m => {
+          if (!m.isMesh) return;
+          let g = m.geometry; if (g.index) { g = g.toNonIndexed(); m.geometry = g; }
+          // o arquivo vem intercalado (posição+normal juntas): separa para poder mexer
+          for (const nm of Object.keys(g.attributes)) if (g.attributes[nm].isInterleavedBufferAttribute) g.setAttribute(nm, g.attributes[nm].clone());
+          const P = g.attributes.position, N = g.attributes.normal; if (!N) return;
+          const atts = Object.values(g.attributes), p = P.array, n = N.array;
+          for (let t = 0; t + 2 < P.count; t += 3) {
+            const a = t * 3, b = a + 3, c = a + 6;
+            const ux = p[b] - p[a], uy = p[b + 1] - p[a + 1], uz = p[b + 2] - p[a + 2];
+            const vx = p[c] - p[a], vy = p[c + 1] - p[a + 1], vz = p[c + 2] - p[a + 2];
+            const gx = uy * vz - uz * vy, gy = uz * vx - ux * vz, gz = ux * vy - uy * vx;
+            if (gx * (n[a] + n[b] + n[c]) + gy * (n[a + 1] + n[b + 1] + n[c + 1]) + gz * (n[a + 2] + n[b + 2] + n[c + 2]) >= 0) continue;
+            for (const at of atts) {
+              const s2 = at.itemSize, arr = at.array, i1 = (t + 1) * s2, i2 = (t + 2) * s2;
+              for (let q = 0; q < s2; q++) { const tmp = arr[i1 + q]; arr[i1 + q] = arr[i2 + q]; arr[i2 + q] = tmp; }
+            }
+          }
+          for (const at of atts) at.needsUpdate = true;
+        });
+        scene.add(gltf.scene);
+        const env = new GradientEquirectTexture();
+        env.topColor.set(sky.top); env.bottomColor.set(sky.bottom); env.update();
+        scene.environment = env; scene.environmentIntensity = sky.env;
+        scene.background = new THREE.Color(0x0A1220);
+        // sol entrando de lado, do alto (sombra suave dos gabinetes de cima na bancada)
+        if (sky.sunI > 0) {
+          const bb = new THREE.Box3().setFromObject(gltf.scene), c = bb.getCenter(new THREE.Vector3()), r = bb.getSize(new THREE.Vector3()).length();
+          const sun = new THREE.DirectionalLight(sky.sun, sky.sunI);
+          const el = sky.el * Math.PI / 180, az = (sky.az + (info.theta || 30)) * Math.PI / 180;
+          sun.position.set(c.x + r * Math.cos(el) * Math.sin(az), c.y + r * Math.sin(el), c.z + r * Math.cos(el) * Math.cos(az));
+          sun.target.position.copy(c); scene.add(sun); scene.add(sun.target);
+        }
+        // a mesma câmera do 3D (ângulo, distância e lente)
+        const o = mv.getCameraOrbit(), t = mv.getCameraTarget(), fov = mv.getFieldOfView();
+        const cam = new THREE.PerspectiveCamera(fov, rect.width / rect.height, 0.02, 500);
+        cam.position.set(t.x + o.radius * Math.sin(o.phi) * Math.sin(o.theta), t.y + o.radius * Math.cos(o.phi), t.z + o.radius * Math.sin(o.phi) * Math.cos(o.theta));
+        cam.lookAt(t.x, t.y, t.z); cam.updateMatrixWorld();
+        const pt = new WebGLPathTracer(renderer);
+        pt.tiles.set(phone ? 3 : 2, phone ? 3 : 2);
+        pt.renderScale = phone ? 0.75 : 1;
+        pt.bounces = 4; pt.filterGlossyFactor = 0.5;
+        pt.setScene(scene, cam);
+        const goal = phone ? 160 : 320;
+        const loop = () => {
+          if (run.stop) { pt.dispose && pt.dispose(); renderer.dispose(); return; }
+          pt.renderSample();
+          const p = Math.min(100, Math.round(pt.samples / goal * 100));
+          if (p < 100) { $("pprog").textContent = L.photoBusy + " " + p + "%"; requestAnimationFrame(loop); }
+          else { $("pprog").textContent = L.photoDone + " ✓"; $("psave").style.display = ""; }
+        };
+        loop();
+      } catch (e) {
+        console.error(e);
+        $("pprog").textContent = L.photoFail;
+      }
+    };
     mv.addEventListener("error", () => { $("stage").innerHTML = '<div class="msg">' + L.err + '</div>'; });
   });
 }
