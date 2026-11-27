@@ -323,17 +323,24 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
         cam.position.set(t.x + o.radius * Math.sin(o.phi) * Math.sin(o.theta), t.y + o.radius * Math.cos(o.phi), t.z + o.radius * Math.sin(o.phi) * Math.cos(o.theta));
         cam.lookAt(t.x, t.y, t.z); cam.updateMatrixWorld();
         const pt = new WebGLPathTracer(renderer);
-        pt.tiles.set(phone ? 3 : 2, phone ? 3 : 2);
-        pt.renderScale = phone ? 0.75 : 1;
-        pt.bounces = 4; pt.filterGlossyFactor = 0.5;
+        // rápido: sem ladrilhos (cada amostra é a tela inteira), resolução menor no celular e 3 rebatidas de luz
+        pt.tiles.set(1, 1);
+        pt.renderScale = phone ? 0.6 : 0.85;
+        pt.bounces = 3; pt.filterGlossyFactor = 0.5;
         pt.setScene(scene, cam);
-        const goal = phone ? 160 : 320;
+        // a foto fica pronta num tempo fixo (uns 12 s no celular): mede quanto o aparelho leva por amostra e decide quantas dá
+        const budget = phone ? 12000 : 9000, minS = 24, maxS = phone ? 160 : 300;
+        const t0 = performance.now();
+        let goal = maxS;
+        $("psave").style.display = ""; // dá para salvar a qualquer momento
         const loop = () => {
           if (run.stop) { pt.dispose && pt.dispose(); renderer.dispose(); return; }
           pt.renderSample();
+          const el = performance.now() - t0;
+          if (pt.samples === 8) goal = Math.max(minS, Math.min(maxS, Math.round(8 * budget / Math.max(el, 1))));
           const p = Math.min(100, Math.round(pt.samples / goal * 100));
           if (p < 100) { $("pprog").textContent = L.photoBusy + " " + p + "%"; requestAnimationFrame(loop); }
-          else { $("pprog").textContent = L.photoDone + " ✓"; $("psave").style.display = ""; }
+          else { $("pprog").textContent = L.photoDone + " ✓"; }
         };
         loop();
       } catch (e) {
