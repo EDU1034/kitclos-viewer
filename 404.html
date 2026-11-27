@@ -139,7 +139,7 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
       '<button slot="ar-button" class="ar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg>' + L.ar + '</button>' +
       '<div class="coach track"><div>' + L.coach + '</div></div>' +
       '<div class="hint">' + L.hint + '</div></model-viewer>' +
-      '<div class="light" id="light">' + ["morning", "noon", "afternoon", "night"].map(m => '<button data-m="' + m + '"' + (m === "noon" ? ' class="on"' : '') + '>' + L[m] + '</button>').join("") + (photos.length ? '<button id="bGal" class="pbtn">' + L.gal + ' (' + photos.length + ')</button>' : '') + '<button id="bPhoto" class="pbtn"' + (photos.length ? ' style="background:rgba(255,255,255,.12);box-shadow:none"' : '') + '>' + L.photo + '</button></div>' +
+      '<div class="light" id="light">' + ["morning", "noon", "afternoon", "night"].map(m => '<button data-m="' + m + '"' + (m === "noon" ? ' class="on"' : '') + '>' + L[m] + '</button>').join("") + (photos.length ? '<button id="bGal" class="pbtn">' + L.gal + ' (' + photos.length + ')</button>' : '') + '</div>' +
       '<div class="gal" id="gal"><img id="gimg" alt=""><button class="gx" id="gx">✕</button><button class="ga gl" id="gl">‹</button><button class="ga gr" id="gr">›</button>' +
       '<div class="gcap"><span id="gn"></span> · ' + L.galNote + '</div></div>' +
       '<div class="tools"><button id="bTop" title="' + L.top + '">⤒</button><button id="bFront" title="' + L.front + '">◉</button><button id="bFull" title="' + L.full + '">⛶</button></div>' +
@@ -281,7 +281,7 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
       const a = document.createElement("a"); a.download = (k || "kitclos") + ".jpg";
       a.href = $("ptc").toDataURL("image/jpeg", 0.92); a.click();
     };
-    $("bPhoto").onclick = async () => {
+    if ($("bPhoto")) $("bPhoto").onclick = async () => {
       if (inside) $("b360").onclick();
       mv.autoRotate = false;
       const box = $("photo"); box.style.display = "block"; $("psave").style.display = "none";
