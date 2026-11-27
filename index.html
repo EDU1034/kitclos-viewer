@@ -151,6 +151,58 @@ if (!k || !/^[a-z0-9-]{6,80}$/.test(k)) {
       '<li>' + L.how3 + '</li><li>' + L.how4 + '</li></ol></div>' +
       '<div class="qr" id="qr"><div id="qrc"></div>' + L.qr + '</div>';
     const mv = document.querySelector("model-viewer");
+    // como no app: a parede que fica entre a câmera e a cozinha some, para ver a ilha e os gabinetes
+    (() => {
+      let walls = null, sc = null, last = "";
+      const sym = o => { const k = Object.getOwnPropertySymbols(o).find(x => x.description === "scene"); return k ? o[k] : null; };
+      const setup = () => {
+        sc = sym(mv); if (!sc || !sc.traverse) return;
+        const list = []; let mn = [1e9, 1e9], mx = [-1e9, -1e9];
+        sc.updateMatrixWorld(true);
+        sc.traverse(o => {
+          if (!/^wall_\d+$/.test(o.name || "")) return;
+          let b0 = [1e9, 1e9, 1e9], b1 = [-1e9, -1e9, -1e9];
+          o.traverse(m => {
+            if (!m.geometry) return;
+            if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
+            const bb = m.geometry.boundingBox, e = m.matrixWorld.elements;
+            for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) for (const z of [bb.min.z, bb.max.z]) {
+              const p = [e[0]*x + e[4]*y + e[8]*z + e[12], e[1]*x + e[5]*y + e[9]*z + e[13], e[2]*x + e[6]*y + e[10]*z + e[14]];
+              for (let i = 0; i < 3; i++) { b0[i] = Math.min(b0[i], p[i]); b1[i] = Math.max(b1[i], p[i]); }
+            }
+          });
+          if (b0[0] > b1[0]) return;
+          list.push({ o, c: [(b0[0] + b1[0]) / 2, (b0[2] + b1[2]) / 2], ex: b1[0] - b0[0], ez: b1[2] - b0[2] });
+          mn = [Math.min(mn[0], b0[0]), Math.min(mn[1], b0[2])]; mx = [Math.max(mx[0], b1[0]), Math.max(mx[1], b1[2])];
+        });
+        const rc = [(mn[0] + mx[0]) / 2, (mn[1] + mx[1]) / 2];
+        for (const w of list) {
+          // normal para dentro: no eixo fino da parede, apontando para o meio da sala
+          let n;
+          if (w.ex < w.ez * 0.25) n = [Math.sign(rc[0] - w.c[0]) || 1, 0];
+          else if (w.ez < w.ex * 0.25) n = [0, Math.sign(rc[1] - w.c[1]) || 1];
+          else { const d = [rc[0] - w.c[0], rc[1] - w.c[1]], l = Math.hypot(d[0], d[1]) || 1; n = [d[0] / l, d[1] / l]; }
+          w.n = n;
+        }
+        walls = list;
+      };
+      const update = () => {
+        if (!walls) setup();
+        if (!walls || !walls.length || !sc) return;
+        const cam = sc.camera || (sc.getCamera && sc.getCamera()); if (!cam) return;
+        cam.updateMatrixWorld(true);
+        const e = cam.matrixWorld.elements, ex = e[12], ez = e[14];
+        let key = "";
+        for (const w of walls) {
+          const show = (ex - w.c[0]) * w.n[0] + (ez - w.c[1]) * w.n[1] >= 0;
+          w.o.visible = show; key += show ? "1" : "0";
+        }
+        if (key !== last) { last = key; if (sc.queueRender) sc.queueRender(); }
+      };
+      mv.addEventListener("load", () => { walls = null; last = ""; update(); });
+      mv.addEventListener("camera-change", update);
+      setInterval(update, 250);
+    })();
     // 360°: câmera parada no meio da cozinha, na altura dos olhos, olhando em volta
     let inside = false;
     const outsideView = () => {
